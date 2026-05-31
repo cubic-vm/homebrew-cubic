@@ -1,8 +1,8 @@
 class Cubic < Formula
   desc "Lightweight command-line manager for virtual machines"
   homepage "https://github.com/cubic-vm/cubic"
-  url "https://github.com/cubic-vm/cubic/archive/refs/tags/v0.22.1.tar.gz"
-  sha256 "7c8a4331a2530b374d83ae627e0d2a3c4630b17627b9ed164f671582b6a6aa67"
+  url "https://github.com/cubic-vm/cubic/archive/refs/tags/v0.23.0.tar.gz"
+  sha256 "24a59f8c444ade283633b92adffb9b75fb0a8e4295bb661c3e46eebdfcd667ee"
   license "MIT OR Apache-2.0"
 
   depends_on "rust" => :build
