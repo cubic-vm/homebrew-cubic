@@ -2,6 +2,7 @@ name: Continuous Integration
 
 on:
   workflow_dispatch:
+  pull_request:
   push:
     branches: [ main ]
 
@@ -9,15 +10,34 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Lint Formula
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Check Style
+        run: brew style ./cubic.rb
+
+      - name: Audit Formula
+        run: brew audit --strict --online ./cubic.rb
+
   check-linux:
     name: Check Linux
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
       - name: Install Package
-        run: brew install cubic-vm/cubic/cubic
+        run: brew install --build-from-source ./cubic.rb
 
       - name: Verify Installation
         run: |
@@ -31,11 +51,14 @@ jobs:
     name: Check macOS
     runs-on: macos-latest
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
       - name: Install Package
-        run: brew install cubic-vm/cubic/cubic
+        run: brew install --build-from-source ./cubic.rb
 
       - name: Verify Installation
         run: |
