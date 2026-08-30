@@ -2,6 +2,7 @@ name: Continuous Integration
 
 on:
   workflow_dispatch:
+  pull_request:
   push:
     branches: [ main ]
 
@@ -9,38 +10,32 @@ permissions:
   contents: read
 
 jobs:
-  check-linux:
-    name: Check Linux
-    runs-on: ubuntu-latest
+  test-bot:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Homebrew
+        id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install Package
-        run: brew install cubic-vm/cubic/cubic
+      - name: Cache Homebrew Bundler RubyGems
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ matrix.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ matrix.os }}-rubygems-
 
-      - name: Verify Installation
-        run: |
-          which cubic
-          cubic --version
+      - name: Clean up before testing
+        run: brew test-bot --only-cleanup-before
 
-      - name: Show Help
-        run: cubic --help
+      - name: Set up test-bot
+        run: brew test-bot --only-setup
 
-  check-macos:
-    name: Check macOS
-    runs-on: macos-latest
-    steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
+      - name: Check tap syntax (style + audit)
+        run: brew test-bot --only-tap-syntax
 
-      - name: Install Package
-        run: brew install cubic-vm/cubic/cubic
-
-      - name: Verify Installation
-        run: |
-          which cubic
-          cubic --version
-
-      - name: Show Help
-        run: cubic --help
+      - name: Build and test changed formulae
+        if: github.event_name == 'pull_request'
+        run: brew test-bot --only-formulae
